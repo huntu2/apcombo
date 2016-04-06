@@ -1,0 +1,17 @@
+#!/bin/bash
+
+export PATH=$PATH:/home/tbadmin/umtskeeper2
+
+MODEM_NAME=Huawei
+
+echo "$0: Try to resetmodem named:$MODEM_NAME"
+
+MODEM=$(lsusb | grep $MODEM_NAME)
+
+if [ "$MODEM" == "" ];then
+   echo "$0: Fatal ERROR, $MODEM_NAME not found!"
+else
+   BUS=${MODEM:4:3}
+   SBUS=${MODEM:15:3}
+   sudo resetusb /dev/bus/usb/$BUS/$SBUS
+fi

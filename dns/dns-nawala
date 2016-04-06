@@ -1,0 +1,3 @@
+mv /etc/resolv.conf /etc/resov.conf.bak
+echo "nameserver 180.131.144.144" > /etc/resolv.conf
+echo "nameserver 180.131.145.145" >> /etc/resolv.conf

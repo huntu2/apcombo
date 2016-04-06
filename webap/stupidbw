@@ -1,0 +1,32 @@
+#!/bin/bash
+
+DEV=ppp0
+DELAY=1
+
+RX0=$(cat /sys/class/net/$DEV/statistics/rx_bytes)
+TX0=$(cat /sys/class/net/$DEV/statistics/tx_bytes)
+sleep $DELAY
+RX1=$(cat /sys/class/net/$DEV/statistics/rx_bytes)
+TX1=$(cat /sys/class/net/$DEV/statistics/tx_bytes)
+
+RXS=$(($RX1-$RX0))
+TXS=$(($TX1-$TX0))
+
+RXU="B/S"
+TXU="B/S"
+
+if [ $RXS -ge 1024 ];then
+	RXS=$(($RXS/1024))
+	RXU="KB/S"
+else
+	RXU="B/S"
+fi
+
+if [ $TXS -ge 1024 ];then
+	TXS=$(($TXS/1024))
+	TXU="KB/S"
+else
+	TXU="B/S"
+fi
+
+echo -e "RX: $RXS $RXU\nTX: $TXS $TXU"

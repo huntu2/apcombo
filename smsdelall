@@ -1,0 +1,4 @@
+sudo gammu deleteallsms 1 &&
+sudo gammu deleteallsms 2 &&
+sudo gammu deleteallsms 3 &&
+sudo gammu deleteallsms 4

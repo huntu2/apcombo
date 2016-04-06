@@ -1,0 +1,43 @@
+#!/bin/bash
+
+STAMP=.poolstupidbw
+LOG=poolstupidbw.log
+SLEEPTIME=1
+
+if [ "$1" == "stop" ];then
+	echo "Stopping $0"
+	sudo rm -vf /tmp/$STAMP
+	sudo rm -vf /tmp/$LOG
+	sudo pkill poolstupidbw
+	exit 0
+elif [ "$1" == "restart" ];then
+	$0 stop && $0 start
+	exit 0
+elif [ "$1" == "start" ];then
+	echo "Starting $0"
+	nohup $0 >> /tmp/$LOG 2>> /tmp/$LOG &
+	exit 0
+fi
+
+if [ -e "/tmp/$STAMP" ];then
+	echo "$0 already run, exiting"
+	exit 0
+fi
+
+touch /tmp/$STAMP
+touch /tmp/$LOG
+while [ -e "/tmp/$STAMP" ];do 
+	#A=$(./stupidbw)
+	#echo -e $A > /media/webap/stbw
+	
+	sudo ./stupidbw > /media/webap/stbwt &&
+	sudo cat /media/webap/stbwt > /media/webap/stbw
+	
+	#tail /tmp/runwvd.log >> /media/webap/stbw
+	#tail /tmp/runwvdial.log >> /media/webap/stbw	
+ 
+	sleep $SLEEPTIME
+done
+sudo rm -vf /tmp/$STAMP
+echo "$0 done"
+exit 0

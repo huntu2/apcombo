@@ -1,0 +1,45 @@
+#!/bin/bash
+
+MODEM_NAME=Huawei
+MODEM_PORT=0
+
+echo "   Reset Modem"
+echo "   trying to find $MODEM_NAME"
+
+MODEM=$(lsusb | grep $MODEM_NAME)
+if [ "$MODEM" == "" ];then
+   echo "   $MODEM_NAME not found, exiting"
+   exit 0
+fi
+echo "   $MODEM"
+
+if [ -e "/dev/ttyUSB$MODEM_PORT" ];then
+   echo "   /dev/ttyUSB$MODEM_PORT found, no need to resetmodem, exiting!"
+   #exit 0
+fi
+echo "   /dev/ttyUSB$MODEM_PORT not found, need to reset"
+
+cd /opt/apcombo/umtskeeper
+./resetusb /dev/bus/usb/001/001
+
+echo "   waiting /dev/ttyUSB$MODEM_PORT to come out"
+A=true
+B=0
+while($A)
+do
+  if [ -e "/dev/ttyUSB$MODEM_PORT" ];then
+     echo "   /dev/ttyUSB$MODEM_PORT found!"
+     A=false
+  fi
+
+  let "B=B+1"
+  if [ "$B" == "20" ];then
+     echo "   reset all usb time out, no modem found!"
+     A=false
+  fi
+
+  sleep 1
+done
+
+exit 0
+

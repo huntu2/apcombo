@@ -1,0 +1,12 @@
+#!/bin/bash
+
+RES=$(cat /etc/resolv.conf)
+IRES=($RES)
+IPIRES=${IRES[1]}
+PINGIRES=$(fping $IPIRES|grep alive)
+echo $PINGIRES
+
+if [ "$PINGIRES" == "" ];then
+    echo " $IPIRES not reached, redial"
+fi
+                                             

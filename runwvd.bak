@@ -1,0 +1,107 @@
+#!/bin/bash
+
+MODEM_NAME=Huawei
+SLEEPTIME=3
+CHECKTIME=20
+PINGLIMIT=10
+REDIALIMIT=10
+
+resetmodem () 
+{
+    MODEM=$(lsusb | grep $MODEM_NAME)
+    if [ "$MODEM" == "" ];then
+        echo "$(date +%y%m%d%H%M%S) reset modem $MODEM_NAME not found" >> /tmp/$0.log
+    else
+        BUS=${MODEM:4:3}
+        SBUS=${MODEM:15:3}
+
+        sudo ./resetusb /dev/bus/usb/$BUS/$SBUS
+    fi
+}
+
+#stop
+if [ "$1" == "stop" ];then
+    echo " stoping wvdial"
+    rm -f /tmp/$0
+    sudo pkill wvdial
+    rm -f /tmp/wvdial.log
+    rm -f /tmp/$0.log
+    sudo pkill runwvd
+    exit 0
+fi
+
+#exit if already run
+if [ -e "/tmp/$0" ];then
+    echo "$0 alredy running, exiting!"
+    exit 0
+fi
+
+#starting wvdial keep alive
+echo "starting wvdial"
+
+rm -f /tmp/wvdial.log
+rm -f /tmp/$0.log
+touch /tmp/$0
+
+COUNT=0
+REDIAL=0
+CONNECT=0
+
+while [ -e "/tmp/$0" ]
+do
+    #connectivity call
+    if [ ! -e "/sys/class/net/ppp0" ];then 
+        if [ ! $(pidof wvdial) ];then
+            if [ $REDIAL -ge $REDIALIMIT ];then
+                echo "$(date +%y%m%d%H%M%S) $REDIAL redial limit reach, resetmodem" >> /tmp/$0.log
+                REDIAL=0
+                resetmodem
+            else
+                CONNECT=0
+                let "REDIAL+=1"
+                echo "$(date +%y%m%d%H%M%S) calling wvdial" >> /tmp/$0.log
+                sudo nohup wvdial -C wvdial.conf indosat >> /tmp/wvdial.log 2>> /tmp/wvdial.log &
+            fi
+        fi 
+    
+    #connectivitiy test every CHECKTIME x SLEEPTIME periode
+    elif [ $COUNT -ge $CHECKTIME ];then
+        COUNT=0
+
+        LOOPING=true
+        RESPING=0
+        PINGCOUNT=0
+
+        while($LOOPING)
+        do
+            let "PINGCOUNT+=1"
+            
+            RES=$(cat /etc/resolv.conf)
+            IRES=($RES)
+            IPIRES=${IRES[1]}
+            
+            PINGIRES=$(fping $IPIRES|grep alive)
+                                        
+            if [ "$PINGIRES" != "" ];then
+                let "RESPING+=1"
+                LOOPING=false
+            fi
+            
+            if [ $PINGCOUNT -ge $PINGLIMIT ];then LOOPING=false;fi
+            sleep 1
+        done
+        
+        if [ $RESPING -eq 0 ];then
+            echo "$(date +%y%m%d%H%M%S) dns $IPIRES unreachable!" >> /tmp/$0.log
+            sudo pkill wvdial
+        fi
+        
+    #pass ppp0 and wvdial
+    elif [ $CONNECT -eq 0 ];then
+            CONNECT=1
+            echo "$(date +%y%m%d%H%M%S) connected!" >> /tmp/$0.log
+    fi
+
+    let "COUNT+=1"
+    sleep $SLEEPTIME
+done 

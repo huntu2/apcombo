@@ -1,0 +1,27 @@
+#!/bin/bash
+
+echo "clean up folder /var/log/"
+sudo rm -vf /var/log/*.gz
+A=true;B=0;
+while($A)
+do
+	sudo rm -vf /var/log/*.$B
+	let "B=B+1"
+	if [ "$B" == "5" ];then A=false;fi
+done
+
+echo "clean up sub folder /var/log/*"
+for i in /var/log/*
+do
+	if [ -d "$i" ];then
+		sudo rm -vf $i/*.gz
+		A=true;B=0;
+		while($A)
+		do
+    		sudo rm -vf $i/*.$B
+    		let "B=B+1"
+    		if [ "$B" == "5" ];then A=false;fi
+		done
+	fi
+done
+

@@ -1,0 +1,77 @@
+#!/bin/bash
+
+TIMEON1=0
+TIMEOFF1=6
+TIMEON2=6
+TIMEOFF2=24
+
+STAMP=.timerswitcher
+SLEEPTIME=60
+#SLEEPTIME=1
+
+if [ "$1" == "stop" ];then
+	echo "Stopping $0"
+	sudo pkill $0
+	sudo rm -vf /tmp/$STAMP
+	sudo rm -vf /tmp/$0.log
+	sudo ./runwvd stop
+	exit 0
+elif [ "$1" == "restart" ];then
+	$0 stop &&
+	$0 start
+	exit 0
+elif [ "$1" == "start" ];then
+	echo "Starting $0"
+	#$0 &
+	nohup $0 >> /tmp/$0.log 2>> /tmp/$0.log &
+	exit 0
+fi
+
+if [ -e "/tmp/$STAMP" ];then
+	echo "$0 Already running, Exiting!"
+	exit 1
+fi
+
+LASTIME=255;
+TIMESPAN=255;
+
+touch /tmp/$STAMP
+
+while [ -e "/tmp/$STAMP" ];do
+	TIME=$(date +%H)
+	#TIME=$(date +%S)
+	if [ $TIME -ge 24 ];then TIME=0;fi
+	if [ "$LASTIME" != "$TIME" ];then
+		LASTIME=$TIME
+		if [ $LASTIME -ge $TIMEON1 ] && [ $LASTIME -lt $TIMEOFF1 ];then
+			if [ $TIMESPAN != 1 ];then
+				TIMESPAN=1
+				echo "$LASTIME: three"
+				sudo rm startwvd
+				sudo ln -s startwvd-three startwvd
+				sudo ./stopwvd 
+				sudo ./startwvd
+			fi
+		elif [ $LASTIME -ge $TIMEON2 ] && [ $LASTIME -lt $TIMEOFF2 ];then	
+			if [ $TIMESPAN != 2 ];then
+				TIMESPAN=2
+				echo "$LASTIME: indosat"
+				sudo rm startwvd
+				sudo ln -s startwvd-indosat startwvd
+				sudo ./stopwvd 
+				sudo ./startwvd
+			fi	
+		else
+			if [ $TIMESPAN != 3 ];then
+				echo "$LASTIME"
+				TIMESPAN=3
+				echo "$LASTIME: Unknown"
+			fi
+		fi 			
+	fi		
+	
+	sleep $SLEEPTIME
+done
+
+echo "$0 Terminting, done"
+exit 0

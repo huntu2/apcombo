@@ -1,0 +1,6 @@
+#!/bin/bash
+
+while(true)
+do
+	traceroute www.google.com && sleep 10
+done

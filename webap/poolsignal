@@ -1,0 +1,52 @@
+#!/bin/bash
+set -e
+
+STAMP=.poolsig
+LOG=poolsig.log
+OUTPUT="/media/webap/signal"
+PATHEXEC="/opt/apcombo/comsig"
+SLEEPTIME=1
+DEVICE1="/dev/ttyUSB2"
+DEVICE2="/dev/ttyUSB5"
+
+if [ "$1" == "stop" ];then
+	echo "Stopping $0"
+	sudo rm -vf /tmp/$STAMP
+	sudo rm -vf /tmp/$LOG
+	sudo pkill $0
+	exit 0
+elif [ "$1" == "restart" ];then
+	$0 stop && $0 start
+	exit 0
+elif [ "$1" == "start" ];then
+	echo "Starting $0"
+	#sudo nohup $0 >> /tmp/$LOG 2>> /tmp/$LOG &
+	$0 &
+	exit 0
+fi
+
+if [ -e "/tmp/$STAMP" ];then
+	echo "$0 Already run, exiting"
+	exit 0
+fi
+
+touch /tmp/$STAMP
+while [ -e "/tmp/$STAMP" ];do
+	sudo $PATHEXEC $DEVICE1 9600 > $OUTPUT1.tmp
+	STR1=$(cat $OUTPUT1.tmp | grep +CSQ:)
+	ASTR1=${STR1:6:5}
+	#echo $ASTR1
+	sudo $PATHEXEC $DEVICE2 9600 > $OUTPUT2.tmp 
+	STR2=$(cat $OUTPUT2.tmp | grep +CSQ:)
+	ASTR2=${STR2:6:5}
+	#echo $ASTR2
+	echo -e "$DEVICE1:$ASTR1\n$DEVICE2:$ASTR2"
+	echo -e "$DEVICE1:$ASTR1\n$DEVICE2:$ASTR2" > $OUTPUT
+
+	sleep $SLEEPTIME
+done
+
+sudo rm /tmp/$STAMP
+exit 0
+	
+	

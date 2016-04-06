@@ -1,0 +1,43 @@
+usage:
+sudo ./comussd <(optional)-v/vv/vvv> <device> <baudrate> <ussd1> <ussd2> <ussd3> .....
+example
+sudo ./comussd /dev/ttyUSB2 115200 *123# 1 1 -> show only last result
+sudo ./comussd -v /dev/ttyUSB2 115200 *123# 1 1 ->show all ussd respon
+sudo ./comussd -vv /dev/ttyUSB2 115200 *123# 1 1 ->show all at command
+sudo ./comussd -vvv /dev/ttyUSB2 115200 *123# 1 1 ->show all at command & serial setup
+
+support transparan & encoded ascii
+sample encoded 7bit ascii
+    +CUSD: 1,"0031002E0020004B0061007200740075002000540072006900200041
+    006E00640061000A0032002E002000500072006F006D006F0020005400650072
+    0062006100720075000A0033002E00200049006E007400650072006E00650074
+    000A0034002E0020004E0065006C0070006F006E002B002B000A0035002E0020
+    0053004D0053002B002B000A0036002E00200042006C00610063006B00620065
+    007200720079000A0037002E00200056004F00490050000A0038002E00200052
+    006F0061006D0069006E0067000A0039002E00200050006C0061006E00650074
+    00330020",68
+sample transparan:
+    +CUSD: 1,"1. Kartu Tri Anda
+    2. Promo Terbaru
+    3. Internet
+    4. Nelpon++
+    5. SMS++
+    6. Blackberry
+    7. VOIP
+    8. Roaming
+    9. Planet3",68
+
+compile:
+Default development using codeblock
+make clean
+make
+
+Makefile:
+all:
+	gcc -o comussd main.c serial.c timer.c getser.c -I .
+clean:
+	rm comussd
+
+timeout option (hardcoded):
+timeout         -> timeout send at command
+timeoutussd     -> timeout send ussd command

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+FOLDER=/media/webap
+
+if [ ! -d "$FOLDER" ];then
+        sudo mkdir $FOLDER
+        sudo chmod 0777 $FOLDER
+fi
+sudo mount -t tmpfs -o size=128m tmpfs $FOLDER
+
+exit 0

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ "$1" ];then
+    PORT=$1
+else
+    for i in /dev/ttyUSB*
+        do
+            echo $i
+        done
+    PORT=$i
+fi
+
+sudo /opt/apcombo/cominit $PORT 9600
+while (true)
+do
+   sudo /opt/apcombo/comsig $PORT 9600
+   sleep 1
+done

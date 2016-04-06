@@ -1,0 +1,30 @@
+#!/bin/bash
+
+cd /opt/apcombo
+
+ip link set eth0 down
+ip addr del 10.1.1.1/24 dev eth0
+
+brctl addbr br0
+ip addr add 10.1.1.1/24 dev br0
+
+ip addr add 0.0.0.0/0 dev eth0
+brctl addif br0 eth0
+
+ip addr add 0.0.0.0/0 dev wlan0
+brctl addif br0 wlan0
+
+ip link set eth0 up
+ip link set wlan0 up
+ip link set br0 up
+
+hostapd hostapd.conf -B
+
+dnsmasq -D -b -i br0 -F 10.1.1.10,10.1.1.100,24h
+
+sysctl net.ipv4.ip_forward=1
+iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE 
+
+iptables -I FORWARD -i br0 -o 10.1.1.60 -s 10.1.1.0/24 -d 10.1.2.0/24 -j ACCEPT
+ip route add 10.1.2.0/24 via 10.1.1.60
+

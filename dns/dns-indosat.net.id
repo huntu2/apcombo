@@ -1,0 +1,12 @@
+mv /etc/resolv.conf /etc/resolv.conf.bak
+
+echo "nameserver 202.155.0.10" > /etc/resolv.conf
+echo "nameserver 202.155.0.15" >> /etc/resolv.conf
+
+#echo "nameserver 202.155.0.20" > /etc/resolv.conf
+#echo "nameserver 202.155.0.25" >> /etc/resolv.conf
+
+#echo "nameserver 202.155.46.66" > /etc/resolv.conf
+#echo "nameserver 202.155.46.77" >> /etc/resolv.conf
+
+#echo "nameserver 202.155.30.227" > /etc/resolv.conf
